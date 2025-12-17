@@ -27,15 +27,16 @@ IIn the console::init() there is function with lambda that is rerouting system p
 
                                       return len; // it must return what og was returning. It's not important how many bytes were printed but how much oryginally should be
                                 });
-  During run time i call digitalWrite with wrong values to trigger print. It partially works, this is my read from UART0 
+During run time i call digitalWrite with wrong values to trigger print. It partially works, this is my read from UART0:
+
 E (20366) gpio: gpio_set_level(227): GPIO output gpio_num error
 [console.cpp::execute_imp:36] new cmd: 'digitalwrite(-1, -1)' 
 [105069][E][esp32-hal-gpio.c:102] __pinMode(): Invalid pin selected
 [console.cpp::extractBool:117] extractBool err outOfScope: -1 
 E (105242) gpio: gpio_set_level(227): GPIO output gpio_num error
 
-and this is from webSerial
-[console.cpp::execute_imp:36] new cmd: 'digitalwrite(-1, -1)'
+and this is from webSerial:
+[console.cpp::execute_imp:36] new cmd: 'digitalwrite(-1, -1)'       
 [console.cpp::extractBool:117] extractBool err outOfScope: -1
 E (105242) gpio: gpio_set_level(227): GPIO output gpio_num error
 
