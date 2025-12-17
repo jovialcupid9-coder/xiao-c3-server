@@ -138,33 +138,34 @@ namespace console
             printToServer = storage::get("printToServer", true);
             printInfo = storage::get("printInfo", true);
 
+            esp_log_set_timestamp([]() -> uint32_t { return 0; }); // disable time logging
             esp_log_set_vprintf([](const char *format, va_list args)
                                 {
-                                    // calculate needed size
-                                    va_list args_copy;
-                                    va_copy(args_copy, args);
-                                    int len = vsnprintf(nullptr, 0, format, args_copy);
-                                    va_end(args_copy);
-                                    
-                                    if (len < 0) return 0;
-                                    
-                                    // Allocate exact buffer (+1 for null terminator)
-                                    char* buffer = (char*)malloc(len + 1);
-                                    if (!buffer) return 0;
-                                    
-                                    // Format into buffer
-                                    vsnprintf(buffer, len + 1, format, args);
+                                      // calculate needed size
+                                      va_list args_copy;
+                                      va_copy(args_copy, args);
+                                      int len = vsnprintf(nullptr, 0, format, args_copy);
+                                      va_end(args_copy);
 
-                                    if (printToSerial) 
-                                          Serial.print(buffer);
-                                
-                                    if (printToServer) 
-                                          WebSerial.print(buffer);
-                                       
-                                    
-                                    free(buffer);
-                                    
-                                    return len; // it must return what og was returning. It's not important how many bytes were printer but how much oryginally should be 
+                                      if (len < 0)
+                                            return 0;
+                                      // Allocate exact buffer (+1 for null terminator)
+                                      char *buffer = (char *)malloc(len + 1);
+                                      if (!buffer)
+                                            return 0;
+
+                                      // Format into buffer
+                                      vsnprintf(buffer, len + 1, format, args);
+
+                                      if (printToSerial)
+                                            Serial.print(buffer);
+
+                                      if (printToServer)
+                                            WebSerial.print(buffer);
+
+                                      free(buffer);
+
+                                      return len; // it must return what og was returning. It's not important how many bytes were printer but how much oryginally should be
                                 });
 
             Serial.begin(MONITOR_SPEED);
@@ -182,7 +183,7 @@ namespace console
                   while (Serial.available()) // discard garbage
                         Serial.read();
             }
-           
+
             printer("---- START ----");
             printer("uploaded: " __DATE__ " " __TIME__);
 
