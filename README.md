@@ -1,4 +1,4 @@
-IIn the console::init() there is function with lambda that is rerouting system prints:
+In the console::init() there is function with lambda that is rerouting system prints:
        esp_log_set_vprintf([](const char *format, va_list args)
                                 {
                                       // calculate needed size
