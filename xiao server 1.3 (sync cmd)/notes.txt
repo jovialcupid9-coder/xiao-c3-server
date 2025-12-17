@@ -1,0 +1,216 @@
+              void heavyLoad(unsigned long time)
+      {
+            volatile double x = 0;
+            volatile uint32_t y = 1;
+
+            unsigned long start = millis();
+            while (millis() - start < time)
+            { // run for ~250ms
+                  // floating point ops
+                  for (int i = 0; i < 1000; i++)
+                  {
+                        x += sin(i) * cos(i);
+                  }
+                  // integer ops
+                  for (int i = 1; i < 1000; i++)
+                  {
+                        y *= i;
+                        y %= 100000; // prevent overflow
+                  }
+            }
+      }
+
+      extern "C" int log_adapter(const char *fmt, va_list args)
+{
+  char buf[256];
+  vsnprintf(buf, sizeof(buf), fmt, args);
+
+  print_HELPER(buf); // forward all ESP_LOGx to your print()
+  return strlen(buf);
+}
+
+esp_log_set_vprintf(&log_adapter);
+
+
+
+.////////////////////////////////////////////////////////////////////////////////////////////////////////
+                             SPIFFS that is formatted by lambda processor
+                              request->send(SPIFFS, "/fs.html", "text/html", false, [=](const String &var) -> String
+                                          {
+                                                if (var == "FREESPIFFS") return formatBytes((SPIFFS.totalBytes() - SPIFFS.usedBytes())); 
+                                                if (var == "USEDSPIFFS") return formatBytes(SPIFFS.usedBytes()); 
+                                                if (var == "TOTALSPIFFS") return formatBytes(SPIFFS.totalBytes());
+                                                else { printer("processor err for", quote(var)); return String(); 
+                                          }}); });
+
+
+
+
+
+                              MANUAL JSON GENERATION;
+                                          /*
+                              debug("updating dashBoardData");
+                              uint32_t interval_ms = 500; // ESP32 decides update interval
+                              String json = "{";
+
+                              json += "\"host\":\"";
+                              json += WiFi.getHostname();
+                              json += "\"";
+
+                              json += ",\"date\":\"";
+                              json += __DATE__;
+                              json += "\"";
+
+                              json += ",\"time\":\"";
+                              json += __TIME__;
+                              json += "\"";
+
+                              json += ",\"model\":\"";
+                              json += ESP.getChipModel();
+                              json += "\"";
+
+                              json += ",\"ip\":\"";
+                              json += WiFi.localIP().toString();
+                              json += "\"";
+
+                              json += ",\"ssid\":\"";
+                              json += WiFi.SSID();
+                              json += "\"";
+
+                              json += ",\"rssi\":\""; 
+                              json += WiFi.RSSI();
+                              json += "\"";
+
+                              json += ",\"frag\":\""; 
+                              json += String(performance::getFragmentation()) + "%";
+                              json += "\"";
+
+                              json += ",\"uptime\":\"";
+                              json += formatMs(millis());
+                              json += "\"";
+
+                              json += ",\"heap\":\""; 
+                              json += formatBytes(ESP.getHeapSize() - ESP.getFreeHeap(), ESP.getHeapSize());
+                              json += "\"";
+
+                              json += ",\"sketch\":\""; 
+                              json += formatBytes(ESP.getSketchSize(), ESP.getFreeSketchSpace() + ESP.getSketchSize());
+                              json += "\"";
+
+                              json += ",\"interval\":\"";
+                              json += storage::get("dashBoard_interval", "10000");
+                              json += "\"";
+
+                              json += "}";
+                              */     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                class Json
+    {
+      // JSON STRUCTURE {"name" : number, "name2 : "String" }
+      String &buff;
+
+      Json(String &buff, unsigned int initialSize = 1024) : buff(buff)
+      {
+        buff.reserve(initialSize);
+        buff = "{";
+      }
+
+      static bool _add(const String &name, const String &text)
+      {
+        buff += "\""; // + "
+        buff += name;
+        buff += ":\"";
+        buff += text;
+        buff += ",";
+
+        return true; // separator between key values, must be moved at the
+                     // beggining with check if it's fisrt cell
+      }
+      bool add(const String &name, const String &text)
+      {
+        return _add(name, text);
+      }
+      bool add(const String &name, const char *str)
+      {
+        return _add(name, String(text));
+      }
+      bool add(const String &name, int val) { return _add(name, (String)val); }
+
+      static bool _get(const String &name, const String &output)
+      {
+        int index = buff.indexOf(name);
+
+        if (index = -1)
+          return false;
+
+        output = buff.substring(index, buff.indexOf(","));
+        return true;
+      }
+
+      bool get(const String &name, const String &output)
+      {
+        return _get(name, output);
+      }
+      bool get(const String &name, const int &output)
+      {
+        String _buff;
+        buff.reserve(512);
+        _get(name, _buff);
+
+        return _buff.toInt();
+      }
+
+      void close() { buff.setCharAt(buff.lastIndexOfbuff(','), '}'); }
+
+      // buff is string so it can be printed directly, it's chunked version
+      void print()
+      {
+        int lastSemicolonIndex = 0;
+        int semicolonIndex = 0;
+
+        int lastCommaIndex = 0;
+        int commaIndex;
+
+        String name;
+        String text;
+        name.reserve(256);
+        text.reserve(256);
+
+        for (;;)
+        {
+          semicolonIndex = buff.indexOf(":", lastSemicolonIndex);
+          name = buff.substring(1 /*initial open */, semicolonIndex - 1);
+          lastSemicolonIndex = semicolonIndex;
+
+          commaIndex = buff.indexOf(",", lastSemicolonIndex);
+          if (commaIndex == -1) // last record
+          {
+            String text =
+                buff.substring(lastSemicolonIndex + 1, buff.indexof("}"));
+            printer(name, text);
+            return;
+          }
+          else
+            String text = buff.substring(lastSemicolonIndex + 1, commaIndex);
+
+          printer(name, text);
+        }
+      };
