@@ -28,7 +28,8 @@ IIn the console::init() there is function with lambda that is rerouting system p
                                       return len; // it must return what og was returning. It's not important how many bytes were printed but how much oryginally should be
                                 });
 During run time i call digitalWrite with wrong values to trigger print. It partially works,
-It misses part of prints still. Implement a way that will reroute all of them.  This is my read from UART0:
+It misses part of prints still. Implement a way that will reroute all of them. Must be thread-safe. If possible do not use dynamic allocation to prevent heap fragmentation. 
+This is my read from UART0:
 
 E (20366) gpio: gpio_set_level(227): GPIO output gpio_num error
 
